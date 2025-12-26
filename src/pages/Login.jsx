@@ -11,46 +11,55 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
 
-  const handleLogin = (role) => {
-    let userDetails;
-    switch (role) {
-      case 'Administrator':
-        userDetails = { email: 'admin@mirchi35.com', name: 'Mirchi35 Admin', role: 'Administrator' };
-        break;
-      case 'Priest':
-        userDetails = { email: 'priest@mirchi35.com', name: 'Pandit Sharma', role: 'Priest' };
-        break;
-      case 'Accountant':
-        userDetails = { email: 'accountant@mirchi35.com', name: 'Sita Devi', role: 'Accountant' };
-        break;
-      default:
-        return;
-    }
-    login(userDetails);
-    toast({
-      title: `🎉 Welcome, ${role}!`,
-      description: "You have successfully logged in.",
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email && password) {
-      // This is a generic login, we'll default to an admin role for demo purposes
-      login({ email, name: 'Mirchi35 Admin', role: 'Administrator' });
+  const handleLogin = async (defaultEmail, defaultPassword) => {
+    try {
+      setIsLoading(true);
+      await login({ email: defaultEmail, password: defaultPassword });
       toast({
-        title: "🎉 Welcome Back!",
+        title: "🎉 Welcome!",
         description: "You have successfully logged in.",
       });
-    } else {
+    } catch (error) {
+      toast({
+        title: "❌ Login Failed",
+        description: error.response?.data?.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
       toast({
         title: "⚠️ Error",
         description: "Please enter both email and password.",
         variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await login({ email, password });
+      toast({
+        title: "🎉 Welcome Back!",
+        description: "You have successfully logged in.",
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Login Failed",
+        description: error.response?.data?.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,8 +117,8 @@ const Login = () => {
               </Button>
             </div>
           </div>
-          <Button type="submit" className="w-full text-lg py-6">
-            Login
+          <Button type="submit" className="w-full text-lg py-6" disabled={isLoading}>
+            {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         
@@ -124,15 +133,13 @@ const Login = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <Button variant="outline" onClick={() => handleLogin('Administrator')}>
-            <ShieldCheck className="w-4 h-4 mr-2" /> Admin
-          </Button>
-          <Button variant="outline" onClick={() => handleLogin('Priest')}>
-            <UserCog className="w-4 h-4 mr-2" /> Vendor
-          </Button>
-          <Button variant="outline" onClick={() => handleLogin('Accountant')}>
-            <BookOpen className="w-4 h-4 mr-2" /> Accountant
+        <div className="grid grid-cols-1 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleLogin('admin-mirch@mirchi35.com', 'mirchiAdmin@Dec625')}
+            disabled={isLoading}
+          >
+            <ShieldCheck className="w-4 h-4 mr-2" /> Quick Login as Admin
           </Button>
         </div>
       </motion.div>

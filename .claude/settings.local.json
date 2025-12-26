@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(du:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

@@ -3,22 +3,16 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ConfirmDialogProvider } from '@/components/ConfirmDialog';
 import Layout from '@/components/Layout';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
-import DevoteeManagement from '@/pages/DevoteeManagement';
-import AddDevotee from '@/pages/AddDevotee';
-import DonationManagement from '@/pages/DonationManagement';
-import AddDonation from '@/pages/AddDonation';
-import SevaBooking from '@/pages/SevaBooking';
-import AddSevaBooking from '@/pages/AddSevaBooking';
-import EventManagement from '@/pages/EventManagement';
-import AddEvent from '@/pages/AddEvent';
-import InventoryManagement from '@/pages/InventoryManagement';
-import AddInventoryItem from '@/pages/AddInventoryItem';
-import StaffManagement from '@/pages/StaffManagement';
-import AddStaff from '@/pages/AddStaff';
-import FinancialReports from '@/pages/FinancialReports';
+import UserManagement from '@/pages/DevoteeManagement';
+import AddUser from '@/pages/AddDevotee';
+import CategoryManagement from '@/pages/CategoryManagement';
+import TemplateManagement from '@/pages/TemplateManagement';
+import OutletManagement from '@/pages/OutletManagement';
+import OutletTypeManagement from '@/pages/OutletTypeManagement';
 import Settings from '@/pages/Settings';
 import Profile from '@/pages/Profile';
 import RolesManagement from '@/pages/RolesManagement';
@@ -41,19 +35,12 @@ const AppRoutes = () => {
             <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/devotees" element={<DevoteeManagement />} />
-                <Route path="/devotees/new" element={<AddDevotee />} />
-                <Route path="/donations" element={<DonationManagement />} />
-                <Route path="/donations/new" element={<AddDonation />} />
-                <Route path="/seva" element={<SevaBooking />} />
-                <Route path="/seva/new" element={<AddSevaBooking />} />
-                <Route path="/events" element={<EventManagement />} />
-                <Route path="/events/new" element={<AddEvent />} />
-                <Route path="/inventory" element={<InventoryManagement />} />
-                <Route path="/inventory/new" element={<AddInventoryItem />} />
-                <Route path="/staff" element={<StaffManagement />} />
-                <Route path="/staff/new" element={<AddStaff />} />
-                <Route path="/reports" element={<FinancialReports />} />
+                <Route path="/users" element={<UserManagement />} />
+                <Route path="/users/new" element={<AddUser />} />
+                <Route path="/categories" element={<CategoryManagement />} />
+                <Route path="/templates" element={<TemplateManagement />} />
+                <Route path="/outlets" element={<OutletManagement />} />
+                <Route path="/outlet-types" element={<OutletTypeManagement />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/roles" element={<RolesManagement />} />
@@ -70,14 +57,16 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Helmet>
-          <title>Mirchi35 Admin Management</title>
-          <meta name="description" content="A comprehensive Admin platform for Mirchi35 management." />
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-          <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:wght@400;500;700&display=swap" rel="stylesheet" />
-        </Helmet>
-        <AppRoutes />
+        <ConfirmDialogProvider>
+          <Helmet>
+            <title>Admin Panel</title>
+            <meta name="description" content="A comprehensive Admin platform for managing your organization." />
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+            <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:wght@400;500;700&display=swap" rel="stylesheet" />
+          </Helmet>
+          <AppRoutes />
+        </ConfirmDialogProvider>
       </AuthProvider>
     </ThemeProvider>
   );

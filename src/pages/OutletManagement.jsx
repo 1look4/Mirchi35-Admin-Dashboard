@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, FileDown, Trash2, Edit } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Search, Filter, FileDown, Trash2, Edit, Eye } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useConfirm } from '@/components/ConfirmDialog';
-import { userService } from '@/services';
+import { outletService } from '@/services';
 
-const DevoteeManagement = () => {
+const OutletManagement = () => {
   const { toast } = useToast();
   const confirm = useConfirm();
-  const [users, setUsers] = useState([]);
+  const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalOutlets, setTotalOutlets] = useState(0);
 
   useEffect(() => {
-    fetchUsers();
+    fetchOutlets();
   }, [currentPage, searchQuery]);
 
-  const fetchUsers = async () => {
+  const fetchOutlets = async () => {
     try {
       setLoading(true);
       const params = {
@@ -36,18 +35,24 @@ const DevoteeManagement = () => {
         params.search = searchQuery;
       }
 
-      const response = await userService.getAllUsers(params);
+      console.log('Fetching outlets with params:', params);
+      const response = await outletService.getAllOutlets(params);
+      console.log('Outlet API response:', response);
 
       if (response.success) {
-        setUsers(response.data || []);
+        setOutlets(response.data || []);
         setTotalPages(response.pages || 1);
-        setTotalUsers(response.total || 0);
+        setTotalOutlets(response.total || 0);
+        console.log('Outlets loaded:', response.data?.length || 0);
+      } else {
+        console.warn('API returned success: false', response);
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      console.error('Failed to fetch outlets:', error);
+      console.error('Error details:', error.response?.data || error.message);
       toast({
         title: "Error",
-        description: "Failed to load users",
+        description: error.response?.data?.message || "Failed to load outlets",
         variant: "destructive"
       });
     } finally {
@@ -60,10 +65,10 @@ const DevoteeManagement = () => {
     setCurrentPage(1);
   };
 
-  const handleDeleteUser = async (userId, userName) => {
+  const handleDeleteOutlet = async (outletId, outletName) => {
     const confirmed = await confirm({
-      title: 'Delete User',
-      description: `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
+      title: 'Delete Outlet',
+      description: `Are you sure you want to delete "${outletName}"? This action cannot be undone.`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       variant: 'destructive',
@@ -72,16 +77,16 @@ const DevoteeManagement = () => {
     if (!confirmed) return;
 
     try {
-      await userService.deleteUser(userId);
+      await outletService.deleteOutlet(outletId);
       toast({
         title: "Success",
-        description: `User ${userName} has been deleted`,
+        description: `Outlet ${outletName} has been deleted`,
       });
-      fetchUsers();
+      fetchOutlets();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: "Failed to delete outlet",
         variant: "destructive"
       });
     }
@@ -89,32 +94,26 @@ const DevoteeManagement = () => {
 
   const handleExport = () => {
     toast({
-      title: `🚀 Export Users`,
-      description: "🚧 This feature isn't implemented yet—but don't worry! You can request it in your next prompt! 🚀",
+      title: `Export Outlets`,
+      description: "This feature isn't implemented yet—but don't worry! You can request it in your next prompt!",
     });
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-6">
       <Helmet>
-        <title>User Management - Admin Panel</title>
+        <title>Outlet Management - Admin Panel</title>
       </Helmet>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground mt-2">Manage user accounts, roles, and permissions.</p>
+          <h1 className="text-3xl font-bold text-foreground">Outlet Management</h1>
+          <p className="text-muted-foreground mt-2">Manage outlets, businesses, and establishments.</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={handleExport}>
             <FileDown className="w-4 h-4 mr-2" />
             Export
-          </Button>
-          <Button asChild>
-            <Link to="/users/new">
-              <Plus className="w-4 h-4 mr-2" />
-              Add User
-            </Link>
           </Button>
         </div>
       </div>
@@ -125,7 +124,7 @@ const DevoteeManagement = () => {
             <div className="relative w-full md:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Search users..."
+                placeholder="Search outlets..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={handleSearch}
@@ -142,57 +141,63 @@ const DevoteeManagement = () => {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-secondary">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Name</th>
-                  <th scope="col" className="px-6 py-3">Contact</th>
-                  <th scope="col" className="px-6 py-3">Department</th>
-                  <th scope="col" className="px-6 py-3">Joined Date</th>
-                  <th scope="col" className="px-6 py-3">Role</th>
+                  <th scope="col" className="px-6 py-3">Outlet Name</th>
+                  <th scope="col" className="px-6 py-3">Phone</th>
+                  <th scope="col" className="px-6 py-3">Owner</th>
+                  <th scope="col" className="px-6 py-3">Outlet Type</th>
+                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">Created Date</th>
                   <th scope="col" className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center">
+                    <td colSpan="7" className="px-6 py-8 text-center">
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <span className="ml-3 text-muted-foreground">Loading users...</span>
+                        <span className="ml-3 text-muted-foreground">Loading outlets...</span>
                       </div>
                     </td>
                   </tr>
-                ) : users.length === 0 ? (
+                ) : outlets.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-muted-foreground">
-                      No users found
+                    <td colSpan="7" className="px-6 py-8 text-center text-muted-foreground">
+                      No outlets found
                     </td>
                   </tr>
-                ) : users.map((user, index) => (
+                ) : outlets.map((outlet, index) => (
                   <motion.tr
-                    key={user.userId}
+                    key={outlet.businessId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className="border-b hover:bg-muted/50"
                   >
-                    <td className="px-6 py-4 font-medium text-foreground">{user.name}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{user.email}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{user.phone || 'N/A'}</td>
+                    <td className="px-6 py-4 font-medium text-foreground">{outlet.Name}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{outlet.Phone || 'N/A'}</td>
                     <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {outlet.userId?.name || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {outlet.outletTypeId?.name || 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        user.role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                        outlet.Active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                       }`}>
-                        {user.role}
+                        {outlet.Active ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {new Date(outlet.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteUser(user.userId, user.name)}
+                        onClick={() => handleDeleteOutlet(outlet.businessId, outlet.Name)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -232,4 +237,4 @@ const DevoteeManagement = () => {
   );
 };
 
-export default DevoteeManagement;
+export default OutletManagement;
